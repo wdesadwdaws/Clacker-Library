@@ -1,0 +1,1841 @@
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local uis = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local ContentProvider = game:GetService("ContentProvider")
+
+local localPlayer = Players.LocalPlayer
+
+local Library = {
+	Theme = {
+		Dark = {
+			MainFrame = {
+				BackgroundColor = Color3.fromRGB(203, 203, 203),
+				BackgroundTransparency = 0.7,
+				StrokeColor = Color3.fromRGB(102, 102, 102),
+				StrokeThickness = 5,
+				CornerRadius = 0, 12
+			},
+			TopBar = {
+				BackgroundColor = Color3.fromRGB(50, 50, 50),
+				Line = Color3.fromRGB(83, 83, 83),
+			},
+			TabButtons = {
+				BackgroundColor = Color3.fromRGB(37, 37, 37),
+				BackgroundTransparency = 0.6,
+				Line = Color3.fromRGB(83, 83, 83);
+			},
+			TabHolder = {
+				BackgroundTransparency = 0.8,
+				BackgroundColor = Color3.fromRGB(203, 203, 203)
+			}
+		}
+	}
+}
+local SoundEnabled = true 
+local LoadedSounds = {} 
+local SoundAssets = { 
+	Hover = "rbxassetid://6895079853", 
+	Click = "rbxassetid://1412830636", 
+	Notify = "rbxassetid://6026984224" 
+} 
+
+local function CreateSound() 
+	local SoundFolder = Instance.new("Folder") 
+	SoundFolder.Name = "Sounds" 
+	SoundFolder.Parent = Workspace 
+	for name, id in pairs(SoundAssets) do 
+		local s = Instance.new("Sound") 
+		s.Name = name 
+		s.SoundId = id 
+		s.Volume = 0.5 
+		s.Parent = SoundFolder 
+		LoadedSounds[name] = s 
+	end 
+	ContentProvider:PreloadAsync(SoundFolder:GetChildren()) 
+end 
+task.spawn(CreateSound) 
+
+local function PlayAudio(name) 
+	if not SoundEnabled then return end 
+	local sound = LoadedSounds[name] 
+	if sound then 
+		sound:Play() 
+	end 
+end
+
+function Library:validate(defaults, options)	
+	for i, v in pairs(defaults) do
+		if options[i] == nil then
+			options[i] = v
+		end
+	end
+	return options
+end
+
+
+
+function Library.CreateWindow(options)
+	options = Library:validate({
+		Title = ""
+	}, options or  {})
+
+	local GUI = {
+		CurrentTab = nil,
+		StrokeHover = false,
+		ExitHover = false,
+		MinHover = false,
+		CloseHover = false
+	}
+	-- Main
+	do
+		-- StarterGui.IpadUI
+		GUI["1"] = Instance.new("ScreenGui", localPlayer:WaitForChild("PlayerGui"));
+		GUI["1"]["Name"] = [[IpadUI]];
+		GUI["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
+
+
+		-- StarterGui.IpadUI.Main
+		GUI["2"] = Instance.new("Frame", GUI["1"]);
+		GUI["2"]["BorderSizePixel"] = 0;
+		GUI["2"]["BackgroundColor3"] = Library.Theme.Dark.MainFrame.BackgroundColor
+		GUI["2"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+		GUI["2"]["Size"] = UDim2.new(0.31847, 0, 0.45403, 0);
+		GUI["2"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+		GUI["2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["2"]["Name"] = [[Main]];
+		GUI["2"]["BackgroundTransparency"] =  Library.Theme.Dark.MainFrame.BackgroundTransparency
+
+
+		-- StarterGui.IpadUI.Main.UIAspectRatioConstraint
+		GUI["3"] = Instance.new("UIAspectRatioConstraint", GUI["2"]);
+		GUI["3"]["AspectRatio"] = 1.125;
+		GUI["3"]["AspectType"] = Enum.AspectType.ScaleWithParentSize;
+
+
+		-- StarterGui.IpadUI.Main.UIStroke
+		GUI["4"] = Instance.new("UIStroke", GUI["2"]);
+		GUI["4"]["Thickness"] = Library.Theme.Dark.MainFrame.StrokeThickness;
+		GUI["4"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+		GUI["4"]["Color"] = Library.Theme.Dark.MainFrame.StrokeColor;
+
+		-- StarterGui.IpadUI.Main.UICorner
+		GUI["5"] = Instance.new("UICorner", GUI["2"]);
+		GUI["5"]["CornerRadius"] = UDim.new(Library.Theme.Dark.MainFrame.CornerRadius)
+
+
+		-- StarterGui.IpadUI.Main.TopBar
+		GUI["6"] = Instance.new("Frame", GUI["2"]);
+		GUI["6"]["BorderSizePixel"] = 0;
+		GUI["6"]["BackgroundColor3"] = Library.Theme.Dark.TopBar.BackgroundColor
+		GUI["6"]["Size"] = UDim2.new(1, 0, 0.1125, 0);
+		GUI["6"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["6"]["Name"] = [[TopBar]];
+
+
+		-- StarterGui.IpadUI.Main.TopBar.UIAspectRatioConstraint
+		GUI["7"] = Instance.new("UIAspectRatioConstraint", GUI["6"]);
+		GUI["7"]["AspectRatio"] = 10;
+		GUI["7"]["AspectType"] = Enum.AspectType.ScaleWithParentSize;
+
+
+		-- StarterGui.IpadUI.Main.TopBar.UICorner
+		GUI["8"] = Instance.new("UICorner", GUI["6"]);
+
+
+
+		-- StarterGui.IpadUI.Main.TopBar.Hide
+		GUI["9"] = Instance.new("Frame", GUI["6"]);
+		GUI["9"]["BorderSizePixel"] = 0;
+		GUI["9"]["BackgroundColor3"] = Color3.fromRGB(50, 50, 50);
+		GUI["9"]["AnchorPoint"] = Vector2.new(0, 1);
+		GUI["9"]["Size"] = UDim2.new(1, 0, 0.5, 0);
+		GUI["9"]["Position"] = UDim2.new(0, 0, 1, 0);
+		GUI["9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["9"]["Name"] = [[Hide]];
+
+
+		-- StarterGui.IpadUI.Main.TopBar.Title
+		GUI["a"] = Instance.new("TextLabel", GUI["6"]);
+		GUI["a"]["TextWrapped"] = true;
+		GUI["a"]["BorderSizePixel"] = 0;
+		GUI["a"]["TextSize"] = 14;
+		GUI["a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+		GUI["a"]["TextScaled"] = true;
+		GUI["a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		GUI["a"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+		GUI["a"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+		GUI["a"]["BackgroundTransparency"] = 1;
+		GUI["a"]["Size"] = UDim2.new(1, 0, 1, 0);
+		GUI["a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["a"]["Text"] = options.Title
+		GUI["a"]["Name"] = options.Title
+
+
+		-- StarterGui.IpadUI.Main.TopBar.Title.UIAspectRatioConstraint
+		GUI["b"] = Instance.new("UIAspectRatioConstraint", GUI["a"]);
+		GUI["b"]["AspectRatio"] = 10;
+		GUI["b"]["AspectType"] = Enum.AspectType.ScaleWithParentSize;
+
+
+		-- StarterGui.IpadUI.Main.TopBar.Title.UIPadding
+		GUI["c"] = Instance.new("UIPadding", GUI["a"]);
+		GUI["c"]["PaddingLeft"] = UDim.new(0, 26);
+
+
+		-- StarterGui.IpadUI.Main.TopBar.Title.UITextSizeConstraint
+		GUI["d"] = Instance.new("UITextSizeConstraint", GUI["a"]);
+		GUI["d"]["MaxTextSize"] = 24;
+
+
+		-- StarterGui.IpadUI.Main.TopBar.Line
+		GUI["e"] = Instance.new("Frame", GUI["6"]);
+		GUI["e"]["BorderSizePixel"] = 0;
+		GUI["e"]["BackgroundColor3"] = Library.Theme.Dark.TopBar.Line
+		GUI["e"]["AnchorPoint"] = Vector2.new(0, 1);
+		GUI["e"]["Size"] = UDim2.new(1, 0, 0, 4);
+		GUI["e"]["Position"] = UDim2.new(0, 0, 1, 0);
+		GUI["e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["e"]["Name"] = [[Line]];
+
+
+		-- StarterGui.IpadUI.Main.TopBar.Exit
+		GUI["f"] = Instance.new("ImageLabel", GUI["6"]);
+		GUI["f"]["BorderSizePixel"] = 0;
+		GUI["f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		GUI["f"]["ImageColor3"] = Color3.fromRGB(202, 202, 202);
+		GUI["f"]["AnchorPoint"] = Vector2.new(1, 0);
+		GUI["f"]["Image"] = [[rbxassetid://10747384394]];
+		GUI["f"]["Size"] = UDim2.new(0.05333, 0, 0.53333, 0);
+		GUI["f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["f"]["BackgroundTransparency"] = 1;
+		GUI["f"]["Name"] = [[Exit]];
+		GUI["f"]["Position"] = UDim2.new(0.98667, 0, 0.13333, 0);
+
+
+		-- StarterGui.IpadUI.Main.TopBar.Min
+		GUI["10"] = Instance.new("ImageLabel", GUI["6"]);
+		GUI["10"]["BorderSizePixel"] = 0;
+		GUI["10"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		GUI["10"]["ImageColor3"] = Color3.fromRGB(202, 202, 202);
+		GUI["10"]["AnchorPoint"] = Vector2.new(1, 0);
+		GUI["10"]["Image"] = [[rbxassetid://10734895698]];
+		GUI["10"]["Size"] = UDim2.new(0.05333, 0, 0.53333, 0);
+		GUI["10"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["10"]["BackgroundTransparency"] = 1;
+		GUI["10"]["Name"] = [[Min]];
+		GUI["10"]["Position"] = UDim2.new(0.92, 0, 0.13333, 0);
+
+
+		-- StarterGui.IpadUI.Main.TopBar.Close
+		GUI["11"] = Instance.new("ImageLabel", GUI["6"]);
+		GUI["11"]["BorderSizePixel"] = 0;
+		GUI["11"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		GUI["11"]["ImageColor3"] = Color3.fromRGB(202, 202, 202);
+		GUI["11"]["AnchorPoint"] = Vector2.new(1, 0);
+		GUI["11"]["Image"] = [[rbxassetid://10734896206]];
+		GUI["11"]["Size"] = UDim2.new(0.05333, 0, 0.53333, 0);
+		GUI["11"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["11"]["BackgroundTransparency"] = 1;
+		GUI["11"]["Name"] = [[Close]];
+		GUI["11"]["Position"] = UDim2.new(0.85333, 0, 0.13333, 0);
+
+
+		-- StarterGui.IpadUI.Main.TabContent
+		GUI["20"] = Instance.new("Frame", GUI["2"]);
+		GUI["20"]["BorderSizePixel"] = 0;
+		GUI["20"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		GUI["20"]["Size"] = UDim2.new(1, 0, 1, -150);
+		GUI["20"]["Position"] = UDim2.new(0, 0, 0, 46);
+		GUI["20"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["20"]["Name"] = [[TabContent]];
+		GUI["20"]["BackgroundTransparency"] = 1;
+
+		GUI["2"].MouseEnter:Connect(function()
+			GUI.StrokeHover = true
+
+			if GUI.StrokeHover then
+				GUI["4"].Color = Color3.fromRGB(202, 202, 202)
+				PlayAudio("Hover")
+			end
+		end)
+
+		GUI["2"].MouseLeave:Connect(function()
+			GUI.StrokeHover = false
+
+			if not GUI.StrokeHover then
+				GUI["4"].Color = Color3.fromRGB(102, 102, 102)
+			end
+		end)
+
+		GUI["f"].MouseEnter:Connect(function()
+			GUI.ExitHover = true
+
+			if GUI.ExitHover then 
+				GUI["f"].ImageColor3 = Color3.fromRGB(255, 255, 255)
+				PlayAudio("Hover")
+			end
+		end)
+
+		GUI["f"].MouseLeave:Connect(function()
+			GUI.ExitHover = false
+
+			if not GUI.ExitHover then 
+				GUI["f"].ImageColor3 = Color3.fromRGB(202, 202, 202)
+			end
+		end)
+
+		GUI["f"].InputBegan:Connect(function(input, gpe)
+			if gpe then return end
+
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				if GUI.ExitHover then
+					GUI["1"]:Destroy()	
+					PlayAudio("Click")
+				end
+			end
+		end)
+
+		GUI["10"].MouseEnter:Connect(function()
+			GUI.MinHover = true
+
+			if GUI.MinHover then 
+				GUI["10"].ImageColor3 = Color3.fromRGB(255, 255, 255)
+				PlayAudio("Hover")
+			end
+		end)
+
+		GUI["10"].MouseLeave:Connect(function()
+			GUI.MinHover = false
+
+			if not GUI.MinHover then 
+				GUI["10"].ImageColor3 = Color3.fromRGB(202, 202, 202)
+			end
+		end)
+
+		GUI["10"].InputBegan:Connect(function(input, gpe)
+			if gpe then return end
+
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				if GUI.MinHover then
+					local Big = true
+					local Small = false
+
+					if Big then
+						Small = true
+						Big = false
+						GUI["2"]["Size"] = UDim2.new(0.15424, 0, 0.22201, 0);
+						PlayAudio("Click")
+					end
+				end
+			end
+		end)
+
+		GUI["10"].InputEnded:Connect(function(input, gpe)
+			if gpe then return end
+
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				if GUI.MinHover then
+					local Big = false
+					local Small = true
+
+					if Small then
+						Big = true
+						Small = false
+						GUI["2"]["Size"] = UDim2.new(0.31847, 0, 0.45403, 0);
+						PlayAudio("Click")
+					end
+				end
+			end
+		end)
+
+		GUI["11"].MouseEnter:Connect(function()
+			GUI.CloseHover = true
+
+			if GUI.CloseHover then 
+				GUI["11"].ImageColor3 = Color3.fromRGB(255, 255, 255)
+				PlayAudio("Hover")
+			end
+		end)
+
+		GUI["11"].MouseLeave:Connect(function()
+			GUI.CloseHover = false
+
+			if not GUI.CloseHover then 
+				GUI["11"].ImageColor3 = Color3.fromRGB(202, 202, 202)
+			end
+		end)
+
+		GUI["11"].InputBegan:Connect(function(input, gpe)
+			if gpe then return end
+
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				if GUI.CloseHover then
+					GUI["2"].Visible = false
+					PlayAudio("Click")
+				end
+			end
+		end)
+		
+		local frame = GUI["2"]
+		local dragging = false
+		local dragStart
+		local startPos
+
+		frame.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				dragging = true
+				dragStart = input.Position
+				startPos = frame.Position
+			end
+		end)
+
+		frame.InputEnded:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				dragging = false
+			end
+		end)
+
+		uis.InputChanged:Connect(function(input)
+			if not dragging then return end
+			if input.UserInputType ~= Enum.UserInputType.MouseMovement then return end
+
+			local delta = input.Position - dragStart
+
+			frame.Position = UDim2.new(
+				startPos.X.Scale,
+				startPos.X.Offset + delta.X,
+				startPos.Y.Scale,
+				startPos.Y.Offset + delta.Y
+			)
+		end)
+	end
+
+	do
+		-- StarterGui.IpadUI.Main.TabButtons
+		GUI["12"] = Instance.new("Frame", GUI["2"]);
+		GUI["12"]["BorderSizePixel"] = 0;
+		GUI["12"]["BackgroundColor3"] = Library.Theme.Dark.TabButtons.BackgroundColor
+		GUI["12"]["AnchorPoint"] = Vector2.new(0, 1);
+		GUI["12"]["Size"] = UDim2.new(1, 0, 0.25, 0);
+		GUI["12"]["Position"] = UDim2.new(0, 0, 1, 0);
+		GUI["12"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["12"]["Name"] = [[TabButtons]];
+		GUI["12"]["BackgroundTransparency"] = Library.Theme.Dark.TabButtons.BackgroundTransparency
+
+
+		-- StarterGui.IpadUI.Main.TabButtons.UIAspectRatioConstraint
+		GUI["13"] = Instance.new("UIAspectRatioConstraint", GUI["12"]);
+		GUI["13"]["AspectRatio"] = 4.5;
+		GUI["13"]["AspectType"] = Enum.AspectType.ScaleWithParentSize;
+
+
+		-- StarterGui.IpadUI.Main.TabButtons.Line
+		GUI["14"] = Instance.new("Frame", GUI["12"]);
+		GUI["14"]["BorderSizePixel"] = 0;
+		GUI["14"]["BackgroundColor3"] = Library.Theme.Dark.TabButtons.Line
+		GUI["14"]["AnchorPoint"] = Vector2.new(0, 1);
+		GUI["14"]["Size"] = UDim2.new(1, 0, 0, 4);
+		GUI["14"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["14"]["Name"] = [[Line]];
+
+		-- StarterGui.IpadUI.Main.TabButtons.TabHolder
+		GUI["15"] = Instance.new("Frame", GUI["12"]);
+		GUI["15"]["BorderSizePixel"] = 0;
+		GUI["15"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+		GUI["15"]["Size"] = UDim2.new(1, 0, 1, 0);
+		GUI["15"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+		GUI["15"]["Name"] = [[TabHolder]];
+		GUI["15"]["BackgroundTransparency"] = 1;
+
+
+		-- StarterGui.IpadUI.Main.TabButtons.TabHolder.UIListLayout
+		GUI["16"] = Instance.new("UIListLayout", GUI["15"]);
+		GUI["16"]["Padding"] = UDim.new(0, 8);
+		GUI["16"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+		GUI["16"]["FillDirection"] = Enum.FillDirection.Horizontal;
+
+
+		-- StarterGui.IpadUI.Main.TabButtons.TabHolder.UIPadding
+		GUI["17"] = Instance.new("UIPadding", GUI["15"]);
+		GUI["17"]["PaddingRight"] = UDim.new(0, 8);
+		GUI["17"]["PaddingLeft"] = UDim.new(0, 8);
+	end
+
+	function GUI.CreateTab(options)
+		options = Library:validate({
+			Title = ""
+		}, options or  {})
+
+		local Tab = {
+			Hover = false,
+			Active = false
+		}
+
+		do
+			-- StarterGui.IpadUI.Main.TabButtons.TabHolder.InactiveTab
+			Tab["18"] = Instance.new("TextLabel", GUI["15"]);
+			Tab["18"]["TextWrapped"] = true;
+			Tab["18"]["BorderSizePixel"] = 0;
+			Tab["18"]["TextScaled"] = true;
+			Tab["18"]["BackgroundColor3"] = Library.Theme.Dark.TabHolder.BackgroundColor
+			Tab["18"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+			Tab["18"]["TextColor3"] = Color3.fromRGB(203, 203, 203);
+			Tab["18"]["BackgroundTransparency"] = Library.Theme.Dark.TabHolder.BackgroundTransparency
+			Tab["18"]["Size"] = UDim2.new(0.22222, 0, 1, 0);
+			Tab["18"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+			Tab["18"]["Text"] = options.Title
+			Tab["18"]["Name"] = options.Title
+
+
+			-- StarterGui.IpadUI.Main.TabButtons.TabHolder.InactiveTab.UITextSizeConstraint
+			Tab["19"] = Instance.new("UITextSizeConstraint", Tab["18"]);
+			Tab["19"]["MaxTextSize"] = 24;
+			Tab["19"]["MinTextSize"] = 14;
+
+
+			-- StarterGui.IpadUI.Main.TabButtons.TabHolder.InactiveTab.UIAspectRatioConstraint
+			Tab["1a"] = Instance.new("UIAspectRatioConstraint", Tab["18"]);
+			Tab["1a"]["DominantAxis"] = Enum.DominantAxis.Height;
+			Tab["1a"]["AspectRatio"] = 0.96444;
+			Tab["1a"]["AspectType"] = Enum.AspectType.ScaleWithParentSize;
+
+
+			-- StarterGui.IpadUI.Main.TabButtons.TabHolder.InactiveTab.UIStroke
+			Tab["1b"] = Instance.new("UIStroke", Tab["18"]);
+			Tab["1b"]["Thickness"] = 3;
+			Tab["1b"]["Color"] = Color3.fromRGB(203, 203, 203);
+			Tab["1b"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+			-- StarterGui.IpadUI.Main.TabContent.TabHolder
+			Tab["21"] = Instance.new("ScrollingFrame", GUI["20"]);
+			Tab["21"]["BorderSizePixel"] = 0;
+			Tab["21"]["CanvasPosition"] = Vector2.new(0, 0);
+			Tab["21"]["Name"] = [[TabHolder]];
+			Tab["21"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+			Tab["21"]["Selectable"] = false;
+			Tab["21"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
+			Tab["21"]["Size"] = UDim2.new(1, 0, 1, 0);
+			Tab["21"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+			Tab["21"]["ScrollBarThickness"] = 0;
+			Tab["21"]["BackgroundTransparency"] = 1;
+			Tab["21"]["Visible"] = false
+
+
+			-- StarterGui.IpadUI.Main.TabContent.TabHolder.UIPadding
+			Tab["22"] = Instance.new("UIPadding", Tab["21"]);
+			Tab["22"]["PaddingTop"] = UDim.new(0, 6);
+			Tab["22"]["PaddingRight"] = UDim.new(0, 6);
+			Tab["22"]["PaddingLeft"] = UDim.new(0, 6);
+			Tab["22"]["PaddingBottom"] = UDim.new(0, 6);
+
+
+			-- StarterGui.IpadUI.Main.TabContent.TabHolder.UIListLayout
+			Tab["23"] = Instance.new("UIListLayout", Tab["21"]);
+			Tab["23"]["Padding"] = UDim.new(0, 10);
+			Tab["23"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+		end
+
+		function Tab.ActivateTab()
+			if Tab.Active then return end
+
+			if GUI.CurrentTab and GUI.CurrentTab ~= Tab then
+				GUI.CurrentTab.DeactivateTab()
+			end
+
+			Tab.Active = true
+			Tab.Hover = true
+
+			Tab["1b"].Color = Color3.fromRGB(255, 255, 255)
+			Tab["21"].Visible = true
+
+			GUI.CurrentTab = Tab
+		end
+
+		function Tab.DeactivateTab()
+			if not Tab.Active then return end
+
+			Tab.Active = false
+			Tab.Hover = false
+
+			Tab["1b"].Color = Color3.fromRGB(203, 203, 203)
+			Tab["21"].Visible = false
+		end
+
+		Tab["18"].MouseEnter:Connect(function()
+			Tab.Hover = true
+
+			if not Tab.Active then
+				Tab["1b"].Color = Color3.fromRGB(255, 255, 255)
+				PlayAudio("Hover")
+			end
+		end)
+
+		Tab["18"].MouseLeave:Connect(function()
+			Tab.Hover = false
+
+			if not Tab.Active then
+				Tab["1b"].Color = Color3.fromRGB(203, 203, 203)
+			end
+		end)
+
+		-- Click handler
+		Tab["18"].InputBegan:Connect(function(input, gpe)
+			if gpe then return end
+
+			if input.UserInputType == Enum.UserInputType.MouseButton1 then
+				Tab.ActivateTab()
+				PlayAudio("Click")
+			end
+		end)
+
+
+		function Tab.AddButton(options)
+			options = Library:validate({
+				Text = "",
+				Callback = function() end,
+			}, options or  {})
+
+			local Button = {
+				Hover = false,
+				MouseDown = false
+			}
+
+			do
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Button
+				Button["24"] = Instance.new("Frame", Tab["21"]);
+				Button["24"]["BorderSizePixel"] = 0;
+				Button["24"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49);
+				Button["24"]["Size"] = UDim2.new(1, 0, 0, 48);
+				Button["24"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Button["24"]["Name"] = [[Button]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Button.UICorner
+				Button["25"] = Instance.new("UICorner", Button["24"]);
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Button.UIStroke
+				Button["26"] = Instance.new("UIStroke", Button["24"]);
+				Button["26"]["Thickness"] = 3;
+				Button["26"]["Color"] = Color3.fromRGB(83, 83, 83);
+				Button["26"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Button.Title
+				Button["27"] = Instance.new("TextLabel", Button["24"]);
+				Button["27"]["BorderSizePixel"] = 0;
+				Button["27"]["TextSize"] = 14;
+				Button["27"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				Button["27"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Button["27"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				Button["27"]["TextColor3"] = Color3.fromRGB(146, 146, 146);
+				Button["27"]["BackgroundTransparency"] = 1;
+				Button["27"]["Size"] = UDim2.new(1, 0, 1, 0);
+				Button["27"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Button["27"]["Text"] = options.Text;
+				Button["27"]["Name"] = options.Text;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Button.Title.UIPadding
+				Button["28"] = Instance.new("UIPadding", Button["27"]);
+				Button["28"]["PaddingLeft"] = UDim.new(0, 24);
+			end
+
+			function Button.SetText(text)
+				Button["27"].Text = text
+			end
+
+			Button["24"].MouseEnter:Connect(function()
+				Button.Hover = true
+
+				if Button.Hover then
+					Button["26"].Color = Color3.fromRGB(146, 146, 146)
+					Button["27"].TextColor3 = Color3.fromRGB(255, 255, 255)
+					PlayAudio("Hover")
+				end
+			end)
+
+			Button["24"].MouseLeave:Connect(function()
+				Button.Hover = false
+
+				if not Button.MouseDown then
+					Button["26"].Color = Color3.fromRGB(83, 83, 83)
+					Button["27"].TextColor3 = Color3.fromRGB(146, 146, 146)
+				end
+			end)
+
+			uis.InputBegan:Connect(function(input, gpe)
+				if gpe then return end
+
+				if input.UserInputType == Enum.UserInputType.MouseButton1 and Button.Hover then
+					Button.MouseDown = true
+					Button["26"].Color = Color3.fromRGB(146, 146, 146)
+					Button["27"].TextColor3 = Color3.fromRGB(255, 255, 255)
+					Button["24"].BackgroundColor3 = Color3.fromRGB(62, 62, 62)
+					PlayAudio("Click")
+					options.Callback()
+				end
+			end)
+
+			uis.InputEnded:Connect(function(input, gpe)
+				if gpe then return end
+
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					Button.MouseDown = false
+
+					if Button.Hover then
+						Button["26"].Color = Color3.fromRGB(146, 146, 146)
+						Button["27"].TextColor3 = Color3.fromRGB(255, 255, 255)
+						Button["24"].BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+					else
+						Button["26"].Color = Color3.fromRGB(83, 83, 83)
+						Button["27"].TextColor3 = Color3.fromRGB(146, 146, 146)
+						Button["24"].BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+					end
+				end
+			end)
+
+			return Button
+		end
+
+		function Tab.AddLabel(options)
+			options = Library:validate({
+				Text = ""
+			}, options or  {})
+
+			local Label = {
+				Hover = false,
+			}
+
+			do
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Label
+				Label["29"] = Instance.new("Frame", Tab["21"]);
+				Label["29"]["BorderSizePixel"] = 0;
+				Label["29"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49);
+				Label["29"]["Size"] = UDim2.new(1, 0, 0, 48);
+				Label["29"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Label["29"]["Name"] = [[Label]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Label.UICorner
+				Label["2a"] = Instance.new("UICorner", Label["29"]);
+
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Label.UIStroke
+				Label["2b"] = Instance.new("UIStroke", Label["29"]);
+				Label["2b"]["Thickness"] = 3;
+				Label["2b"]["Color"] = Color3.fromRGB(83, 83, 83);
+				Label["2b"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Label.Title
+				Label["2c"] = Instance.new("TextLabel", Label["29"]);
+				Label["2c"]["BorderSizePixel"] = 0;
+				Label["2c"]["TextSize"] = 14;
+				Label["2c"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				Label["2c"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Label["2c"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				Label["2c"]["TextColor3"] = Color3.fromRGB(146, 146, 146);
+				Label["2c"]["BackgroundTransparency"] = 1;
+				Label["2c"]["Size"] = UDim2.new(1, 0, 1, 0);
+				Label["2c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Label["2c"]["Text"] = options.Text;
+				Label["2c"]["Name"] = options.Text;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Label.Title.UIPadding
+				Label["2d"] = Instance.new("UIPadding", Label["2c"]);
+				Label["2d"]["PaddingLeft"] = UDim.new(0, 24);
+			end
+
+			function Label:SetText(text)
+				Label["2c"].Text = text
+			end
+
+			Label["29"].MouseEnter:Connect(function()
+				Label.Hover = true
+
+				if Label.Hover then
+					Label["2c"].TextColor3 = Color3.fromRGB(255, 255, 255)
+					PlayAudio("Hover")
+				end
+			end)
+
+			Label["29"].MouseLeave:Connect(function()
+				Label.Hover = false
+
+				if not Label.Hover then
+					Label["2c"].TextColor3 = Color3.fromRGB(146, 146, 146)
+				end
+			end)
+
+			return Label
+		end
+
+		function Tab.AddSlider(options)
+			options = Library:validate({
+				Text = "",
+				Min = 0,
+				Max = 100,
+				Rounding = 1,
+				Defualt = 50,
+				Callback = function(Value) end
+			}, options or  {})
+
+			local Slider = {
+				Hover = false,
+			}
+
+			do
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider
+				Slider["2e"] = Instance.new("Frame", Tab["21"]);
+				Slider["2e"]["BorderSizePixel"] = 0;
+				Slider["2e"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49);
+				Slider["2e"]["Size"] = UDim2.new(1, 0, 0, 60);
+				Slider["2e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Slider["2e"]["Name"] = [[Slider]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.UICorner
+				Slider["2f"] = Instance.new("UICorner", Slider["2e"]);
+
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.UIStroke
+				Slider["30"] = Instance.new("UIStroke", Slider["2e"]);
+				Slider["30"]["Thickness"] = 3;
+				Slider["30"]["Color"] = Color3.fromRGB(83, 83, 83);
+				Slider["30"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.Title
+				Slider["31"] = Instance.new("TextLabel", Slider["2e"]);
+				Slider["31"]["BorderSizePixel"] = 0;
+				Slider["31"]["TextSize"] = 14;
+				Slider["31"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				Slider["31"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Slider["31"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				Slider["31"]["TextColor3"] = Color3.fromRGB(147, 147, 147);
+				Slider["31"]["BackgroundTransparency"] = 1;
+				Slider["31"]["Size"] = UDim2.new(1, -25, 1, -20);
+				Slider["31"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Slider["31"]["Text"] = options.Text;
+				Slider["31"]["Name"] = options.Text;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.Title.UIPadding
+				Slider["32"] = Instance.new("UIPadding", Slider["31"]);
+				Slider["32"]["PaddingTop"] = UDim.new(0, 4);
+				Slider["32"]["PaddingLeft"] = UDim.new(0, 24);
+				Slider["32"]["PaddingBottom"] = UDim.new(0, 4);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.Value
+				Slider["33"] = Instance.new("TextLabel", Slider["2e"]);
+				Slider["33"]["BorderSizePixel"] = 0;
+				Slider["33"]["TextSize"] = 14;
+				Slider["33"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Slider["33"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				Slider["33"]["TextColor3"] = Color3.fromRGB(147, 147, 147);
+				Slider["33"]["BackgroundTransparency"] = 1;
+				Slider["33"]["AnchorPoint"] = Vector2.new(1, 0);
+				Slider["33"]["Size"] = UDim2.new(0, 25, 1, -20);
+				Slider["33"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Slider["33"]["Text"] = tostring(options.Default)
+				Slider["33"]["Name"] = [[Value]];
+				Slider["33"]["Position"] = UDim2.new(1, 0, 0, 0);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.Value.UIPadding
+				Slider["34"] = Instance.new("UIPadding", Slider["33"]);
+				Slider["34"]["PaddingTop"] = UDim.new(0, 4);
+				Slider["34"]["PaddingRight"] = UDim.new(0, 24);
+				Slider["34"]["PaddingBottom"] = UDim.new(0, 4);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.SliderBack
+				Slider["35"] = Instance.new("Frame", Slider["2e"]);
+				Slider["35"]["BorderSizePixel"] = 0;
+				Slider["35"]["BackgroundColor3"] = Color3.fromRGB(25, 25, 25);
+				Slider["35"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+				Slider["35"]["Size"] = UDim2.new(0.95, 0, 0.2, 0);
+				Slider["35"]["Position"] = UDim2.new(0.5, 0, 0.5, 20);
+				Slider["35"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Slider["35"]["Name"] = [[SliderBack]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.SliderBack.UICorner
+				Slider["36"] = Instance.new("UICorner", Slider["35"]);
+
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.SliderBack.UIStroke
+				Slider["37"] = Instance.new("UIStroke", Slider["35"]);
+				Slider["37"]["Thickness"] = 1.4;
+				Slider["37"]["Color"] = Color3.fromRGB(117, 117, 117);
+				Slider["37"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.SliderBack.Draggable
+				Slider["38"] = Instance.new("Frame", Slider["35"]);
+				Slider["38"]["BorderSizePixel"] = 0;
+				Slider["38"]["BackgroundColor3"] = Color3.fromRGB(83, 83, 83);
+				Slider["38"]["Size"] = UDim2.new(0.5, 0, 1, 0);
+				Slider["38"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Slider["38"]["Name"] = [[Draggable]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Slider.SliderBack.Draggable.UICorner
+				Slider["39"] = Instance.new("UICorner", Slider["38"]);
+			end
+
+			local dragging = false
+
+
+			local function updateSlider(percent)
+				percent = math.clamp(percent, 0, 1)
+
+				Slider["38"].Size = UDim2.new(percent, 0, 1, 0)
+
+				local range = options.Max - options.Min
+				local rawValue = options.Min + range * percent
+				local value = math.floor(rawValue / options.Rounding + 0.5) * options.Rounding
+
+				options.Value = value
+				Slider["33"].Text = tostring(value)
+
+				pcall(function()
+					options.Callback(value)
+				end)
+			end
+
+			local function slide(input)
+				local mouseX = input.Position.X
+				local sliderPos = Slider["35"].AbsolutePosition.X
+				local sliderWidth = Slider["35"].AbsoluteSize.X
+
+				local percent = (mouseX - sliderPos) / sliderWidth
+				updateSlider(percent)
+			end
+
+			Slider["35"].MouseEnter:Connect(function()
+				Slider.Hover = true
+
+				if not dragging then
+					Slider["38"].BackgroundColor3 = Color3.fromRGB(100, 100, 100) 
+					PlayAudio("Hover")
+				end
+			end)
+
+			Slider["35"].MouseLeave:Connect(function()
+				Slider.Hover = false
+
+				if not dragging then
+					Slider["38"].BackgroundColor3 = Color3.fromRGB(83, 83, 83)
+				end
+			end)
+
+			Slider["35"].InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					dragging = true
+					slide(input)
+					PlayAudio("Click")
+				end
+			end)
+
+			Slider["35"].InputEnded:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					dragging = false
+					if Slider.Hover then
+						Slider["38"].BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+					else
+						Slider["38"].BackgroundColor3 = Color3.fromRGB(83, 83, 83)
+					end
+				end
+			end)
+
+			uis.InputChanged:Connect(function(input)
+				if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+					slide(input)
+				end
+			end)
+
+
+			local initialPercent = (options.Default - options.Min) / (options.Max - options.Min)
+			updateSlider(initialPercent)
+
+			return Slider
+		end
+
+		function Tab.AddTextBox(options)
+			options = Library:validate({
+				Text = "",
+				Callback = function(Text) end
+			}, options or  {})
+
+			local Textbox = {
+				value = "",
+				hover = false
+			}
+
+			do
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Textbox
+				Textbox["3a"] = Instance.new("Frame", Tab["21"]);
+				Textbox["3a"]["BorderSizePixel"] = 0;
+				Textbox["3a"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49);
+				Textbox["3a"]["Size"] = UDim2.new(1, 0, 0, 48);
+				Textbox["3a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Textbox["3a"]["Name"] = [[Textbox]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Textbox.UICorner
+				Textbox["3b"] = Instance.new("UICorner", Textbox["3a"]);
+
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Textbox.UIStroke
+				Textbox["3c"] = Instance.new("UIStroke", Textbox["3a"]);
+				Textbox["3c"]["Thickness"] = 3;
+				Textbox["3c"]["Color"] = Color3.fromRGB(83, 83, 83);
+				Textbox["3c"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Textbox.Title
+				Textbox["3d"] = Instance.new("TextLabel", Textbox["3a"]);
+				Textbox["3d"]["BorderSizePixel"] = 0;
+				Textbox["3d"]["TextSize"] = 14;
+				Textbox["3d"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				Textbox["3d"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Textbox["3d"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				Textbox["3d"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+				Textbox["3d"]["BackgroundTransparency"] = 1;
+				Textbox["3d"]["Size"] = UDim2.new(0.5, 0, 1, 0);
+				Textbox["3d"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Textbox["3d"]["Text"] = options.Text
+				Textbox["3d"]["Name"] = options.Text
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Textbox.Title.UIPadding
+				Textbox["3e"] = Instance.new("UIPadding", Textbox["3d"]);
+				Textbox["3e"]["PaddingLeft"] = UDim.new(0, 24);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Textbox.Text
+				Textbox["3f"] = Instance.new("TextBox", Textbox["3a"]);
+				Textbox["3f"]["Name"] = [[Text]];
+				Textbox["3f"]["PlaceholderColor3"] = Color3.fromRGB(147, 147, 147);
+				Textbox["3f"]["BorderSizePixel"] = 0;
+				Textbox["3f"]["TextSize"] = 14;
+				Textbox["3f"]["TextColor3"] = Color3.fromRGB(255, 255, 255);
+				Textbox["3f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Textbox["3f"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				Textbox["3f"]["AnchorPoint"] = Vector2.new(1, 0);
+				Textbox["3f"]["PlaceholderText"] = [[TEXT]];
+				Textbox["3f"]["Size"] = UDim2.new(0.5, 0, 1, 0);
+				Textbox["3f"]["Position"] = UDim2.new(1, 0, 0, 0);
+				Textbox["3f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Textbox["3f"]["Text"] = [[]];
+				Textbox["3f"]["BackgroundTransparency"] = 1;
+			end
+
+			Textbox["3a"].MouseEnter:Connect(function()
+				Textbox.hover = true
+				Textbox["3a"].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+				PlayAudio("Hover")
+			end)
+
+			Textbox["3a"].MouseLeave:Connect(function()
+				Textbox.Hover = false
+				Textbox["3a"].BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+			end)
+
+			-- Text Changed
+			Textbox["3f"].FocusLost:Connect(function(enterPressed)
+				Textbox.Value = Textbox["3f"].Text
+
+
+				if options.Callback then
+					pcall(function()
+						options.Callback(Textbox["3f"].Text)
+					end)
+				end
+
+				if enterPressed then
+					PlayAudio("Click")
+				end
+			end)
+
+			Textbox["3f"]:GetPropertyChangedSignal("Text"):Connect(function()
+				Textbox.Value = Textbox["3f"].Text
+				pcall(function()
+					Textbox.Callback(Textbox.Value)
+				end)
+			end)
+
+			return Textbox
+		end
+
+		function Tab.AddKeybind(options)
+			options = Library:validate({
+				Text = "",
+				KeyCode = nil,
+				Callback = function() end
+			}, options or  {})
+
+			local KeyBind = {
+				Waiting = false,
+				Hover = false,
+				CurrentKey = options.KeyCode
+			}
+
+			do
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.KeyBind
+				KeyBind["40"] = Instance.new("Frame", Tab["21"]);
+				KeyBind["40"]["BorderSizePixel"] = 0;
+				KeyBind["40"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49);
+				KeyBind["40"]["Size"] = UDim2.new(1, 0, 0, 48);
+				KeyBind["40"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				KeyBind["40"]["Name"] = [[KeyBind]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.KeyBind.UICorner
+				KeyBind["41"] = Instance.new("UICorner", KeyBind["40"]);
+
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.KeyBind.UIStroke
+				KeyBind["42"] = Instance.new("UIStroke", KeyBind["40"]);
+				KeyBind["42"]["Thickness"] = 3;
+				KeyBind["42"]["Color"] = Color3.fromRGB(83, 83, 83);
+				KeyBind["42"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.KeyBind.Title
+				KeyBind["43"] = Instance.new("TextLabel", KeyBind["40"]);
+				KeyBind["43"]["BorderSizePixel"] = 0;
+				KeyBind["43"]["TextSize"] = 14;
+				KeyBind["43"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				KeyBind["43"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				KeyBind["43"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				KeyBind["43"]["TextColor3"] = Color3.fromRGB(147, 147, 147);
+				KeyBind["43"]["BackgroundTransparency"] = 1;
+				KeyBind["43"]["Size"] = UDim2.new(1, -25, 1, 0);
+				KeyBind["43"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				KeyBind["43"]["Text"] = options.Text;
+				KeyBind["43"]["Name"] = options.Text;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.KeyBind.Title.UIPadding
+				KeyBind["44"] = Instance.new("UIPadding", KeyBind["43"]);
+				KeyBind["44"]["PaddingTop"] = UDim.new(0, 4);
+				KeyBind["44"]["PaddingLeft"] = UDim.new(0, 24);
+				KeyBind["44"]["PaddingBottom"] = UDim.new(0, 4);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.KeyBind.Value
+				KeyBind["45"] = Instance.new("TextLabel", KeyBind["40"]);
+				KeyBind["45"]["BorderSizePixel"] = 0;
+				KeyBind["45"]["TextSize"] = 14;
+				KeyBind["45"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				KeyBind["45"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				KeyBind["45"]["TextColor3"] = Color3.fromRGB(147, 147, 147);
+				KeyBind["45"]["BackgroundTransparency"] = 1;
+				KeyBind["45"]["AnchorPoint"] = Vector2.new(1, 0);
+				KeyBind["45"]["Size"] = UDim2.new(0, 25, 1, 0);
+				KeyBind["45"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				KeyBind["45"]["Text"] = KeyBind.CurrentKey.Name
+				KeyBind["45"]["Name"] = [[Value]];
+				KeyBind["45"]["Position"] = UDim2.new(1, 0, 0, 0);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.KeyBind.Value.UIPadding
+				KeyBind["46"] = Instance.new("UIPadding", KeyBind["45"]);
+				KeyBind["46"]["PaddingTop"] = UDim.new(0, 4);
+				KeyBind["46"]["PaddingRight"] = UDim.new(0, 24);
+				KeyBind["46"]["PaddingBottom"] = UDim.new(0, 4);
+			end
+
+			local function updateDisplay()
+				if KeyBind.CurrentKey then
+					KeyBind["45"].Text = KeyBind.CurrentKey.Name
+				else
+					KeyBind["45"].Text = "..."
+				end
+			end
+
+			KeyBind["40"].MouseEnter:Connect(function()
+				KeyBind.Hover = true
+
+				KeyBind["40"].BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+				PlayAudio("Hover")
+			end)
+
+			KeyBind["40"].MouseLeave:Connect(function()
+				KeyBind.Hover = false
+
+				KeyBind["40"].BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+			end)
+
+			KeyBind["40"].InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					if KeyBind.Waiting then return end
+
+					KeyBind.Waiting = true
+					KeyBind["45"].Text = "..."
+					PlayAudio("Click")
+
+					KeyBind["40"].BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+				end
+			end)
+
+			uis.InputBegan:Connect(function(input, gpe)
+				if not KeyBind.Waiting or gpe then return end
+
+				if input.UserInputType == Enum.UserInputType.Keyboard then
+					KeyBind.CurrentKey = input.KeyCode
+					KeyBind.Waiting = false
+
+					updateDisplay()
+
+					KeyBind["40"].BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+
+					pcall(function()
+						options.Callback(KeyBind.CurrentKey)
+					end)
+
+					PlayAudio("Click")
+				end
+			end)
+
+			local connection = uis.InputBegan:Connect(function(input, gpe)
+				if gpe then return end
+
+				if KeyBind.CurrentKey and input.KeyCode == KeyBind.CurrentKey then
+
+					if options.Callback then
+						pcall(function()
+							options.Callback()
+						end)
+					end
+				end
+			end)
+
+			updateDisplay()
+
+			return KeyBind
+		end
+
+		function Tab.AddUpdateLog(options)
+			options = Library:validate({
+				Text = "",
+				LogText = ""
+			}, options or  {})
+
+			local UpdateLog = {
+				Hover = false
+			}
+
+			do
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.UpdateLog
+				UpdateLog["6b"] = Instance.new("Frame", Tab["21"]);
+				UpdateLog["6b"]["ZIndex"] = 0;
+				UpdateLog["6b"]["BorderSizePixel"] = 0;
+				UpdateLog["6b"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49);
+				UpdateLog["6b"]["Size"] = UDim2.new(1, 0, 0, 102);
+				UpdateLog["6b"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				UpdateLog["6b"]["Name"] = [[UpdateLog]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.UpdateLog.UICorner
+				UpdateLog["6c"] = Instance.new("UICorner", UpdateLog["6b"]);
+
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.UpdateLog.UIStroke
+				UpdateLog["6d"] = Instance.new("UIStroke", UpdateLog["6b"]);
+				UpdateLog["6d"]["Thickness"] = 3;
+				UpdateLog["6d"]["Color"] = Color3.fromRGB(83, 83, 83);
+				UpdateLog["6d"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.UpdateLog.Title
+				UpdateLog["6e"] = Instance.new("TextLabel", UpdateLog["6b"]);
+				UpdateLog["6e"]["BorderSizePixel"] = 0;
+				UpdateLog["6e"]["TextSize"] = 14;
+				UpdateLog["6e"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				UpdateLog["6e"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				UpdateLog["6e"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				UpdateLog["6e"]["TextColor3"] = Color3.fromRGB(147, 147, 147);
+				UpdateLog["6e"]["BackgroundTransparency"] = 1;
+				UpdateLog["6e"]["Size"] = UDim2.new(1, 0, 1, -54);
+				UpdateLog["6e"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				UpdateLog["6e"]["Text"] = options.Text;
+				UpdateLog["6e"]["Name"] = options.Text;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.UpdateLog.Title.UIPadding
+				UpdateLog["6f"] = Instance.new("UIPadding", UpdateLog["6e"]);
+				UpdateLog["6f"]["PaddingLeft"] = UDim.new(0, 24);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.UpdateLog.UpdateText
+				UpdateLog["70"] = Instance.new("TextLabel", UpdateLog["6b"]);
+				UpdateLog["70"]["BorderSizePixel"] = 0;
+				UpdateLog["70"]["TextSize"] = 14;
+				UpdateLog["70"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				UpdateLog["70"]["TextYAlignment"] = Enum.TextYAlignment.Top;
+				UpdateLog["70"]["BackgroundColor3"] = Color3.fromRGB(25, 25, 25);
+				UpdateLog["70"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				UpdateLog["70"]["TextColor3"] = Color3.fromRGB(147, 147, 147);
+				UpdateLog["70"]["AnchorPoint"] = Vector2.new(0.5, 1);
+				UpdateLog["70"]["Size"] = UDim2.new(0.94977, 0, 0.44118, 0);
+				UpdateLog["70"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				UpdateLog["70"]["Text"] = options.LogText;
+				UpdateLog["70"]["Name"] = options.LogText;
+				UpdateLog["70"]["Position"] = UDim2.new(0.5, 0, 0.91176, 0);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.UpdateLog.UpdateText.UIPadding
+				UpdateLog["71"] = Instance.new("UIPadding", UpdateLog["70"]);
+				UpdateLog["71"]["PaddingTop"] = UDim.new(0, 6);
+				UpdateLog["71"]["PaddingLeft"] = UDim.new(0, 6);
+			end
+
+
+			return UpdateLog
+		end
+
+		function Tab.AddDropDown(options)
+			options = Library:validate({
+				Text = "",
+				items = {},
+				Callback = function() end
+			}, options or  {})
+
+			local Dropdown = {
+				Items = {
+					["id"] = {	
+						instance = {},
+						"value"
+					}
+				},
+				Open = false,
+				MouseDown = false,
+				Hover = false,
+				HoveringItem = false,
+				Selected = nil
+			}
+
+			do
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown
+				Dropdown["50"] = Instance.new("Frame", Tab["21"]);
+				Dropdown["50"]["BorderSizePixel"] = 0;
+				Dropdown["50"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49);
+				Dropdown["50"]["ClipsDescendants"] = true;
+				Dropdown["50"]["Size"] = UDim2.new(1, 0, 0, 48);
+				Dropdown["50"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Dropdown["50"]["Name"] = [[DropDown]];
+				Dropdown["50"]["ClipsDescendants"] = true
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.UICorner
+				Dropdown["51"] = Instance.new("UICorner", Dropdown["50"]);
+
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.UIStroke
+				Dropdown["52"] = Instance.new("UIStroke", Dropdown["50"]);
+				Dropdown["52"]["Thickness"] = 3;
+				Dropdown["52"]["Color"] = Color3.fromRGB(83, 83, 83);
+				Dropdown["52"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.Title
+				Dropdown["53"] = Instance.new("TextLabel", Dropdown["50"]);
+				Dropdown["53"]["BorderSizePixel"] = 0;
+				Dropdown["53"]["TextSize"] = 14;
+				Dropdown["53"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				Dropdown["53"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Dropdown["53"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				Dropdown["53"]["TextColor3"] = Color3.fromRGB(147, 147, 147);
+				Dropdown["53"]["BackgroundTransparency"] = 1;
+				Dropdown["53"]["Size"] = UDim2.new(1, 0, 1, 0);
+				Dropdown["53"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Dropdown["53"]["Text"] = options.Text;
+				Dropdown["53"]["Name"] = options.Text;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.Title.UIPadding
+				Dropdown["54"] = Instance.new("UIPadding", Dropdown["53"]);
+				Dropdown["54"]["PaddingLeft"] = UDim.new(0, 24);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.Icon
+				Dropdown["55"] = Instance.new("ImageLabel", Dropdown["50"]);
+				Dropdown["55"]["BorderSizePixel"] = 0;
+				Dropdown["55"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Dropdown["55"]["AnchorPoint"] = Vector2.new(1, 0);
+				Dropdown["55"]["Image"] = [[rbxassetid://10709767827]];
+				Dropdown["55"]["Size"] = UDim2.new(0, 20, 0, 20);
+				Dropdown["55"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Dropdown["55"]["BackgroundTransparency"] = 1;
+				Dropdown["55"]["Name"] = [[Icon]];
+				Dropdown["55"]["Position"] = UDim2.new(1, -12, 0, 8);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.OptionsHolder
+				Dropdown["56"] = Instance.new("ScrollingFrame", Dropdown["50"]);
+				Dropdown["56"]["BorderSizePixel"] = 0;
+				Dropdown["56"]["CanvasPosition"] = Vector2.new(0, 144);
+				Dropdown["56"]["Name"] = [[OptionsHolder]];
+				Dropdown["56"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Dropdown["56"]["Selectable"] = false;
+				Dropdown["56"]["AnchorPoint"] = Vector2.new(0.5, 1);
+				Dropdown["56"]["AutomaticCanvasSize"] = Enum.AutomaticSize.Y;
+				Dropdown["56"]["Size"] = UDim2.new(0, 416, 0, 60);
+				Dropdown["56"]["Position"] = UDim2.new(0.5, 0, 1, -9);
+				Dropdown["56"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Dropdown["56"]["ScrollBarThickness"] = 0;
+				Dropdown["56"]["BackgroundTransparency"] = 1;
+				Dropdown["56"]["Visible"] = false
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.OptionsHolder.UIListLayout
+				Dropdown["57"] = Instance.new("UIListLayout", Dropdown["56"]);
+				Dropdown["57"]["Padding"] = UDim.new(0, 6);
+				Dropdown["57"]["SortOrder"] = Enum.SortOrder.LayoutOrder;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.OptionsHolder.UIPadding
+				Dropdown["58"] = Instance.new("UIPadding", Dropdown["56"]);
+				Dropdown["58"]["PaddingTop"] = UDim.new(0, 1);
+				Dropdown["58"]["PaddingRight"] = UDim.new(0, 1);
+				Dropdown["58"]["PaddingLeft"] = UDim.new(0, 1);
+				Dropdown["58"]["PaddingBottom"] = UDim.new(0, 1);
+			end
+
+			function Dropdown.Add(id, value)
+				local Item = {
+					Hover = false,
+					MouseDown = false
+				}
+
+				if Dropdown.Items[id] ~= nil then 
+					warn("Dropdown already has item with id: " .. id)
+					return 
+				end
+
+				Dropdown.Items[id] = {
+					instance = {},
+					value = value
+				}
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.OptionsHolder.Inactive
+				Dropdown.Items[id].instance["5f"] = Instance.new("Frame", Dropdown["56"]);
+				Dropdown.Items[id].instance["5f"]["BorderSizePixel"] = 0;
+				Dropdown.Items[id].instance["5f"]["BackgroundColor3"] = Color3.fromRGB(65, 65, 65);
+				Dropdown.Items[id].instance["5f"]["Size"] = UDim2.new(1, 0, 0, 16);
+				Dropdown.Items[id].instance["5f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Dropdown.Items[id].instance["5f"]["Name"] = id
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.OptionsHolder.Inactive.UICorner
+				Dropdown.Items[id].instance["60"] = Instance.new("UICorner", Dropdown.Items[id].instance["5f"]);
+
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.OptionsHolder.Inactive.UIStroke
+				Dropdown.Items[id].instance["61"] = Instance.new("UIStroke", Dropdown.Items[id].instance["5f"]);
+				Dropdown.Items[id].instance["61"]["Thickness"] = 2;
+				Dropdown.Items[id].instance["61"]["Color"] = Color3.fromRGB(83, 83, 83);
+				Dropdown.Items[id].instance["61"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.OptionsHolder.Inactive.Title
+				Dropdown.Items[id].instance["62"] = Instance.new("TextLabel", Dropdown.Items[id].instance["5f"]);
+				Dropdown.Items[id].instance["62"]["BorderSizePixel"] = 0;
+				Dropdown.Items[id].instance["62"]["TextSize"] = 14;
+				Dropdown.Items[id].instance["62"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				Dropdown.Items[id].instance["62"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Dropdown.Items[id].instance["62"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				Dropdown.Items[id].instance["62"]["TextColor3"] = Color3.fromRGB(147, 147, 147);
+				Dropdown.Items[id].instance["62"]["BackgroundTransparency"] = 1;
+				Dropdown.Items[id].instance["62"]["Size"] = UDim2.new(1, -16, 1, 0);
+				Dropdown.Items[id].instance["62"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Dropdown.Items[id].instance["62"]["Text"] = id
+				Dropdown.Items[id].instance["62"]["Name"] = id
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.OptionsHolder.Inactive.Title.UIPadding
+				Dropdown.Items[id].instance["63"] = Instance.new("UIPadding", Dropdown.Items[id].instance["62"]);
+				Dropdown.Items[id].instance["63"]["PaddingLeft"] = UDim.new(0, 24);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.DropDown.OptionsHolder.Inactive.Icon
+				Dropdown.Items[id].instance["64"] = Instance.new("ImageLabel", Dropdown.Items[id].instance["5f"]);
+				Dropdown.Items[id].instance["64"]["BorderSizePixel"] = 0;
+				Dropdown.Items[id].instance["64"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Dropdown.Items[id].instance["64"]["ImageColor3"] = Color3.fromRGB(147, 147, 147);
+				Dropdown.Items[id].instance["64"]["AnchorPoint"] = Vector2.new(1, 0);
+				Dropdown.Items[id].instance["64"]["Image"] = [[rbxassetid://10709790644]];
+				Dropdown.Items[id].instance["64"]["Size"] = UDim2.new(0, 16, 0, 16);
+				Dropdown.Items[id].instance["64"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Dropdown.Items[id].instance["64"]["BackgroundTransparency"] = 1;
+				Dropdown.Items[id].instance["64"]["ImageTransparency"] = 1;
+				Dropdown.Items[id].instance["64"]["Name"] = [[Icon]];
+				Dropdown.Items[id].instance["64"]["Position"] = UDim2.new(1, -6, 0, 0);
+
+
+				Dropdown.Items[id].instance["5f"].MouseEnter:Connect(function()
+					Item.Hover = true
+					Dropdown.HoveringItem = true
+
+					if Item.Hover then
+						Dropdown.Items[id].instance["61"].Color = Color3.fromRGB(102, 102, 102)
+						Dropdown.Items[id].instance["5f"].BackgroundColor3 = Color3.fromRGB(82, 82, 82)
+						PlayAudio("Hover")
+					end
+				end)
+
+				Dropdown.Items[id].instance["5f"].MouseLeave:Connect(function()
+					Dropdown.HoveringItem = false
+					Item.Hover = false
+					if not Item.MouseDown then
+						Dropdown.Items[id].instance["61"].Color = Color3.fromRGB(83, 83, 83)
+						Dropdown.Items[id].instance["5f"].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+					end
+				end)
+
+				uis.InputBegan:Connect(function(input, gpe)
+					if gpe then return end
+
+					if Dropdown.Items[id] == nil then return end
+
+					if input.UserInputType == Enum.UserInputType.MouseButton1 and Item.Hover then
+						Item.MouseDown = true
+						Dropdown.HoveringItem = true
+						Dropdown.Items[id].instance["61"].Color = Color3.fromRGB(102, 102, 102)
+						Dropdown.Items[id].instance["5f"].BackgroundColor3 = Color3.fromRGB(82, 82, 82)
+						PlayAudio("Click")
+						if Dropdown.Selected == id then
+							Dropdown.Selected = nil
+
+							Dropdown.Items[id].instance["5f"].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+							Dropdown.Items[id].instance["61"].Color = Color3.fromRGB(83, 83, 83)
+							Dropdown.Items[id].instance["62"].TextColor3 = Color3.fromRGB(147, 147, 147)
+							Dropdown.Items[id].instance["64"].ImageColor3 = Color3.fromRGB(147, 147, 147)
+							
+							Dropdown.Items[id].instance["64"].ImageTransparency = 1
+
+							options.Callback(nil)
+
+						else
+							if Dropdown.Selected and Dropdown.Items[Dropdown.Selected] then
+								local old = Dropdown.Items[Dropdown.Selected]
+								
+								old.instance["5f"].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+								old.instance["61"].Color = Color3.fromRGB(83, 83, 83)
+								old.instance["62"].TextColor3 = Color3.fromRGB(147, 147, 147)
+								old.instance["64"].ImageColor3 = Color3.fromRGB(147, 147, 147)
+								
+								old.instance["64"].ImageTransparency = 1
+							end
+							Dropdown.Selected = id
+
+							Dropdown.Items[id].instance["5f"].BackgroundColor3 = Color3.fromRGB(203, 203, 203)
+							Dropdown.Items[id].instance["61"].Color =  Color3.fromRGB(255, 255, 255)
+							Dropdown.Items[id].instance["62"].TextColor3 = Color3.fromRGB(255, 255, 255)
+							Dropdown.Items[id].instance["64"].ImageColor3 = Color3.fromRGB(255, 255, 255)
+							
+							Dropdown.Items[id].instance["64"].ImageTransparency = 0
+
+							options.Callback(value)
+						end
+					end
+				end)
+
+				uis.InputEnded:Connect(function(input, gpe)
+					if gpe then return end
+
+					if Dropdown.Items[id] == nil then return end
+
+					if input.UserInputType == Enum.UserInputType.MouseButton1 then
+						Item.MouseDown = false
+						if Item.Hover then
+							Dropdown.Items[id].instance["61"].Color = Color3.fromRGB(102, 102, 102)
+							Dropdown.Items[id].instance["5f"].BackgroundColor3 = Color3.fromRGB(82, 82, 82)
+						else
+							Dropdown.Items[id].instance["61"].Color = Color3.fromRGB(83, 83, 83)
+							Dropdown.Items[id].instance["5f"].BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+						end
+					end
+				end)
+			end
+
+			function Dropdown:Remove(id)
+				if Dropdown.Items[id] ~= nil then
+					if Dropdown.Items[id].instance ~= nil then
+
+						if Dropdown.Open then
+							Dropdown["56"].Visible = false
+							Dropdown["50"].Size = UDim2.new(1, 0, 0, 1)
+							task.wait(0.1)
+							Dropdown["50"].Size = UDim2.new(1, 0, 0, 30)
+						end
+
+						for i, v in pairs(Dropdown.Items[id].instance) do
+							if v then
+								v:Destroy()
+							end
+						end
+
+					end
+
+					Dropdown.Items[id] = nil
+				end
+			end
+			
+			function Dropdown:Clear()
+				for i, v in pairs(Dropdown.Items) do
+					Dropdown:Remove(i)
+				end
+			end
+			
+			function Dropdown:Toggle()
+				if Dropdown.Open then
+					Dropdown["50"].Size = UDim2.new(1, 0, 0, 48)
+					Dropdown["53"].Size = UDim2.new(1, -30, 1, -70)
+					Dropdown["56"].Visible = false
+				else
+					local count = 0
+					for i, v in pairs(Dropdown.Items) do
+						if v ~= nil then
+							count += 1
+						end
+					end
+					Dropdown["56"].Visible = true
+					Dropdown["50"].Size = UDim2.new(1, 0, 0, 48 + (count * 16) + 1)
+				end
+				Dropdown.Open = not Dropdown.Open
+			end
+
+			Dropdown["50"].MouseEnter:Connect(function()
+				Dropdown.Hover = true
+
+				Dropdown["52"].Color = Color3.fromRGB(200, 200, 200)
+				PlayAudio("Hover")
+			end)
+
+			Dropdown["50"].MouseLeave:Connect(function()
+				Dropdown.Hover = false
+
+				if not Dropdown.MouseDown then
+					Dropdown["52"].Color = Color3.fromRGB(82, 82, 82)
+				end
+			end)
+
+			uis.InputBegan:Connect(function(input, gpe)
+				if gpe then return end
+
+				if input.UserInputType == Enum.UserInputType.MouseButton1 and Dropdown.Hover then
+					Dropdown.MouseDown = true
+					Dropdown["50"].BackgroundColor3 = Color3.fromRGB(64, 64, 64)
+					Dropdown["52"].Color = Color3.fromRGB(200, 200, 200)
+					if not Dropdown.HoveringItem then
+						Dropdown:Toggle()
+						if Dropdown.Open then
+							Dropdown["53"].Size = UDim2.new(1, -30, 1, -70)
+						else
+							Dropdown["53"].Size = UDim2.new(1, 0, 1, 0)
+						end
+					end
+					PlayAudio("Click")
+				end
+			end)
+
+			uis.InputEnded:Connect(function(input, gpe)
+				if gpe then return end
+
+				if input.UserInputType == Enum.UserInputType.MouseButton1 then
+					Dropdown.MouseDown = false
+
+					if Dropdown.Hover then
+						Dropdown["50"].BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+						Dropdown["52"].Color = Color3.fromRGB(200, 200, 200)
+					else
+						Dropdown["50"].BackgroundColor3 = Color3.fromRGB(49, 49, 49)
+						Dropdown["52"].Color = Color3.fromRGB(82, 82, 82)
+					end
+				end
+			end)
+			
+			Dropdown.CanClose = true
+
+			return Dropdown
+		end
+
+		function Tab.AddToggle(options)
+			options = Library:validate({
+				Text = "",
+				items = {},
+				Callback = function() end
+			}, options or  {})
+			
+			local Toggle = {
+				Hover = false,
+				MouseDown = false,
+				State = false
+			}
+			
+			do
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Toggle
+				Toggle["47"] = Instance.new("Frame", Tab["21"]);
+				Toggle["47"]["BorderSizePixel"] = 0;
+				Toggle["47"]["BackgroundColor3"] = Color3.fromRGB(49, 49, 49);
+				Toggle["47"]["Size"] = UDim2.new(1, 0, 0, 48);
+				Toggle["47"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Toggle["47"]["Name"] = [[Toggle]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Toggle.UICorner
+				Toggle["48"] = Instance.new("UICorner", Toggle["47"]);
+
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Toggle.UIStroke
+				Toggle["49"] = Instance.new("UIStroke", Toggle["47"]);
+				Toggle["49"]["Thickness"] = 3;
+				Toggle["49"]["Color"] = Color3.fromRGB(83, 83, 83);
+				Toggle["49"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Toggle.Title
+				Toggle["4a"] = Instance.new("TextLabel", Toggle["47"]);
+				Toggle["4a"]["BorderSizePixel"] = 0;
+				Toggle["4a"]["TextSize"] = 14;
+				Toggle["4a"]["TextXAlignment"] = Enum.TextXAlignment.Left;
+				Toggle["4a"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Toggle["4a"]["FontFace"] = Font.new([[rbxasset://fonts/families/Ubuntu.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+				Toggle["4a"]["TextColor3"] = Color3.fromRGB(147, 147, 147);
+				Toggle["4a"]["BackgroundTransparency"] = 1;
+				Toggle["4a"]["Size"] = UDim2.new(1, 0, 1, 0);
+				Toggle["4a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Toggle["4a"]["Text"] = [[UI Toggle]];
+				Toggle["4a"]["Name"] = [[Title]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Toggle.Title.UIPadding
+				Toggle["4b"] = Instance.new("UIPadding", Toggle["4a"]);
+				Toggle["4b"]["PaddingTop"] = UDim.new(0, 4);
+				Toggle["4b"]["PaddingLeft"] = UDim.new(0, 24);
+				Toggle["4b"]["PaddingBottom"] = UDim.new(0, 4);
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Toggle.Toggled
+				Toggle["4c"] = Instance.new("Frame", Toggle["47"]);
+				Toggle["4c"]["BorderSizePixel"] = 0;
+				Toggle["4c"]["BackgroundColor3"] = Color3.fromRGB(25, 25, 25);
+				Toggle["4c"]["AnchorPoint"] = Vector2.new(1, 0);
+				Toggle["4c"]["Size"] = UDim2.new(0, 24, 0, 24);
+				Toggle["4c"]["Position"] = UDim2.new(1, -12, 0, 12);
+				Toggle["4c"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Toggle["4c"]["Name"] = [[Toggled]];
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Toggle.Toggled.UIStroke
+				Toggle["4d"] = Instance.new("UIStroke", Toggle["4c"]);
+				Toggle["4d"]["Transparency"] = 0.3;
+				Toggle["4d"]["Thickness"] = 3;
+				Toggle["4d"]["Color"] = Color3.fromRGB(83, 83, 83);
+				Toggle["4d"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Toggle.Toggled.UICorner
+				Toggle["4e"] = Instance.new("UICorner", Toggle["4c"]);
+
+
+
+				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Toggle.Toggled.Icon
+				Toggle["4f"] = Instance.new("ImageLabel", Toggle["4c"]);
+				Toggle["4f"]["BorderSizePixel"] = 0;
+				Toggle["4f"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+				Toggle["4f"]["ImageTransparency"] = 1;
+				Toggle["4f"]["AnchorPoint"] = Vector2.new(0.5, 0.5);
+				Toggle["4f"]["Image"] = [[rbxassetid://10709790644]];
+				Toggle["4f"]["Size"] = UDim2.new(1, 0, 1, 0);
+				Toggle["4f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+				Toggle["4f"]["BackgroundTransparency"] = 1;
+				Toggle["4f"]["Name"] = [[Icon]];
+				Toggle["4f"]["Position"] = UDim2.new(0.5, 0, 0.5, 0);
+
+			end
+			
+			local function SetToggle(state)
+				Toggle.State = state
+
+				if state then
+					Toggle["49"].Color = Color3.fromRGB(255,255,255)
+					Toggle["4c"].BackgroundColor3 = Color3.fromRGB(98, 169, 90)
+					Toggle["4d"].Color = Color3.fromRGB(0, 255, 0)
+					Toggle["4a"].TextColor3 = Color3.fromRGB(255, 255, 255)
+					Toggle["4f"].ImageTransparency = 0
+				else
+					Toggle["49"].Color = Color3.fromRGB(83,83,83)
+					Toggle["4c"].BackgroundColor3 = Color3.fromRGB(25,25,25)
+					Toggle["4d"].Color = Color3.fromRGB(83,83,83)
+					Toggle["4a"].TextColor3 = Color3.fromRGB(147, 147, 147)
+					Toggle["4f"].ImageTransparency = 1
+				end
+
+				options.Callback(state)
+			end
+			
+			Toggle["47"].MouseEnter:Connect(function()
+				Toggle.Hover = true
+				
+				if Toggle.Hover then
+					Toggle["49"].Color = Color3.fromRGB(120, 120, 120)
+					PlayAudio("Hover")
+				end
+			end)
+
+			Toggle["47"].MouseLeave:Connect(function()
+				Toggle.Hover = false
+				
+				if not Toggle.Hover then
+					Toggle["49"].Color = Color3.fromRGB(83, 83, 83)
+				end
+			end)
+
+			uis.InputBegan:Connect(function(input, gpe)
+				if gpe then return end
+
+				if input.UserInputType == Enum.UserInputType.MouseButton1 and Toggle.Hover then
+					SetToggle(not Toggle.State)
+
+					PlayAudio("Click")
+				end
+			end)
+			
+			return Toggle
+		end
+
+		if GUI.CurrentTab == nil then
+			Tab.ActivateTab()
+		end
+		return Tab
+	end
+	return GUI
+end
+
+function Library.ToggleUI(frame)
+	if not frame then return end
+
+	frame.Visible = not frame.Visible
+end
+
+return Library
+
+
