@@ -1721,8 +1721,8 @@ function Library.CreateWindow(options)
 				Toggle["4a"]["BackgroundTransparency"] = 1;
 				Toggle["4a"]["Size"] = UDim2.new(1, 0, 1, 0);
 				Toggle["4a"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
-				Toggle["4a"]["Text"] = options.Title;
-				Toggle["4a"]["Name"] = options.Title;
+				Toggle["4a"]["Text"] = options.Text;
+				Toggle["4a"]["Name"] = options.Text;
 
 
 				-- StarterGui.IpadUI.Main.TabContent.TabHolder.Toggle.Title.UIPadding
