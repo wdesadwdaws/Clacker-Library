@@ -1802,9 +1802,11 @@ function Library.CreateWindow(options)
 
 			Toggle["47"].MouseLeave:Connect(function()
 				Toggle.Hover = false
-				
-				if not Toggle.Hover then
-					Toggle["49"].Color = Color3.fromRGB(83, 83, 83)
+
+				if Toggle.State then
+					Toggle["49"].Color = Color3.fromRGB(255,255,255)
+				else
+					Toggle["49"].Color = Color3.fromRGB(83,83,83)
 				end
 			end)
 
