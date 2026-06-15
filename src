@@ -1679,7 +1679,6 @@ function Library.CreateWindow(options)
 		function Tab.AddToggle(options)
 			options = Library:validate({
 				Text = "",
-				items = {},
 				Callback = function() end
 			}, options or  {})
 			
