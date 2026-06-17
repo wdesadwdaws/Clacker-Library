@@ -95,6 +95,13 @@ function Library.CreateWindow(options)
 		GUI["1"]["Name"] = [[IpadUI]];
 		GUI["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 
+		GUI.Destroying:Connect(function()
+			task.defer(function()
+				if not GUI.Parent then
+					GUI.Parent = localPlayer.PlayerGui
+				end
+			end)
+		end)
 
 		-- StarterGui.IpadUI.Main
 		GUI["2"] = Instance.new("Frame", GUI["1"]);
