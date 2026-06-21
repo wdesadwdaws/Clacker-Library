@@ -1613,6 +1613,10 @@ function Library.CreateWindow(options)
 					Dropdown:Remove(i)
 				end
 			end
+
+			function Dropdown.GetSelected()
+				return Dropdown.Selected
+			end
 			
 			function Dropdown:Toggle()
 				if Dropdown.Open then
